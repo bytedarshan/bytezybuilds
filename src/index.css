@@ -1,0 +1,251 @@
+/* ═══════════════════════════════════════════════
+   BYTEZY BUILDS — Global Design System
+   ═══════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+/* ── Design Tokens ─────────────────────────────── */
+:root {
+  --bg:            #05040B;
+  --indigo:        #261AB1;
+  --purple:        #E1ACF4;
+  --lavender:      #936FAD;
+  --white:         #F8F7FF;
+  --grey:          #A09BB0;
+  --surface:       rgba(255, 255, 255, 0.04);
+  --glass-border:  #E1ACF4;
+  --glow-indigo:   rgba(38, 26, 177, 0.45);
+  --glow-purple:   rgba(225, 172, 244, 0.35);
+  --font-heading:  'Space Grotesk', sans-serif;
+  --font-body:     'Inter', sans-serif;
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out:   cubic-bezier(0.85, 0, 0.15, 1);
+}
+
+/* ── Reset ─────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--white);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  cursor: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Hide default cursor everywhere ─────────────── */
+*, *:hover {
+  cursor: none !important;
+}
+
+/* ── Scrollbar ─────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb {
+  background: var(--indigo);
+  border-radius: 2px;
+}
+
+/* ── Glass Utility ─────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--glass-border);
+  border-left: 1px solid var(--glass-border);
+  border-right: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+  border-radius: 16px;
+}
+
+/* ── Typography ────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--white);
+  letter-spacing: -0.02em;
+}
+
+h1 { font-size: clamp(2.5rem, 10vw, 7rem); }
+h2 { font-size: clamp(1.8rem, 6vw, 3.5rem); }
+h3 { font-size: clamp(1.1rem, 4vw, 1.75rem); }
+
+p {
+  font-family: var(--font-body);
+  color: var(--grey);
+  line-height: 1.75;
+  font-size: 0.95rem;
+}
+
+a { text-decoration: none; color: inherit; }
+button { border: none; background: none; font-family: var(--font-heading); cursor: none; }
+img, svg { display: block; max-width: 100%; }
+ul { list-style: none; }
+
+/* ── Section Utility ───────────────────────────── */
+.section {
+  position: relative;
+  width: 100%;
+  padding: 120px 0;
+  overflow: hidden;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+@media (max-width: 768px) {
+  .section { padding: 70px 0; }
+  .container { padding: 0 24px; }
+}
+
+@media (max-width: 480px) {
+  .section { padding: 50px 0; }
+  .container { padding: 0 16px; }
+}
+
+/* ── Section Label ─────────────────────────────── */
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 16px;
+}
+.section-label::before {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 1px;
+  background: var(--purple);
+}
+
+/* ── Glow Button ───────────────────────────────── */
+.btn-glow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 38px;
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--indigo), #4930d8);
+  border-radius: 50px;
+  border: 1px solid rgba(225, 172, 244, 0.3);
+  box-shadow: 0 0 28px var(--glow-indigo), 0 0 8px var(--glow-purple);
+  transition: all 0.35s var(--ease-out);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.02em;
+}
+.btn-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(225, 172, 244, 0.15));
+  opacity: 0;
+  transition: opacity 0.35s var(--ease-out);
+}
+.btn-glow:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 48px var(--glow-indigo), 0 0 20px var(--glow-purple);
+}
+.btn-glow:hover::after { opacity: 1; }
+
+/* ── Input / Textarea / Select ─────────────────── */
+.field-input,
+.field-select,
+.field-textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(147, 111, 173, 0.3);
+  border-radius: 10px;
+  padding: 14px 18px;
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.field-input:focus,
+.field-select:focus,
+.field-textarea:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(225, 172, 244, 0.1);
+}
+.field-input::placeholder,
+.field-textarea::placeholder { color: var(--lavender); }
+.field-select option { background: #0d0b18; color: var(--white); }
+.field-textarea { resize: vertical; min-height: 120px; }
+.field-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--lavender);
+  margin-bottom: 8px;
+}
+
+/* ── Divider ───────────────────────────────────── */
+.glow-divider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, var(--indigo), var(--purple), transparent);
+  opacity: 0.35;
+  margin: 0;
+}
+
+/* ── Floating noise grain overlay ─────────────── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* ── Fade-in animation ─────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 20px var(--glow-purple); }
+  50%       { box-shadow: 0 0 45px var(--glow-purple), 0 0 80px var(--glow-indigo); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-12px) rotate(1deg); }
+  66%       { transform: translateY(-6px) rotate(-0.5deg); }
+}
+@keyframes borderPulse {
+  0%, 100% { border-color: rgba(225, 172, 244, 0.4); box-shadow: 0 0 12px rgba(225,172,244,0.2); }
+  50%       { border-color: var(--purple); box-shadow: 0 0 28px rgba(225,172,244,0.5); }
+}
+@keyframes scanLine {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}

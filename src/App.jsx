@@ -1,0 +1,61 @@
+import React, { useEffect } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import CustomCursor from './components/CustomCursor'
+import Navbar from './components/Navbar'
+import Hero from './components/Hero'
+import Services from './components/Services'
+import Portfolio from './components/Portfolio'
+import DeploymentRoom from './components/DeploymentRoom'
+import Contact from './components/Contact'
+import Footer from './components/Footer'
+import Dashboard from './components/Dashboard'
+import gsap from 'gsap'
+import ScrollTrigger from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
+
+function MainSite() {
+  useEffect(() => {
+    gsap.utils.toArray('.gsap-reveal').forEach(el => {
+      gsap.fromTo(el,
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1, y: 0,
+          duration: 1,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 85%',
+            toggleActions: 'play none none none'
+          }
+        }
+      )
+    })
+  }, [])
+
+  return (
+    <>
+      <Navbar />
+      <main>
+        <Hero />
+        <Services />
+        <Portfolio />
+        <DeploymentRoom />
+        <Contact />
+      </main>
+      <Footer />
+    </>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <CustomCursor />
+      <Routes>
+        <Route path="/" element={<MainSite />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}

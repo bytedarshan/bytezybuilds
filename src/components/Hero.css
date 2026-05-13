@@ -1,0 +1,178 @@
+.hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 650px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding-top: 100px;
+  padding-bottom: 100px;
+}
+
+.hero__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.hero__canvas canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse 55% 60% at 50% 50%, rgba(38,26,177,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(5,4,11,0.9) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 50% at 50% 0%,   rgba(5,4,11,0.5) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hero__content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  max-width: 860px;
+  padding: 0 24px;
+}
+
+.hero__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(225,172,244,0.2);
+  border-radius: 50px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--lavender);
+  letter-spacing: 0.06em;
+}
+.hero__status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00ffaa;
+  animation: pulseGlow 2s ease-in-out infinite;
+  box-shadow: 0 0 8px #00ffaa;
+}
+
+.hero__title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+  opacity: 0;
+}
+.hero__title-line {
+  display: block;
+  font-size: clamp(4.5rem, 12vw, 9rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--white);
+  text-shadow: 0 0 80px rgba(38,26,177,0.4);
+}
+.hero__title-line--accent {
+  background: linear-gradient(135deg, #E1ACF4 0%, #8B5CF6 40%, #261AB1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 0 30px rgba(225,172,244,0.4));
+}
+
+.hero__sub {
+  font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+  color: var(--grey);
+  max-width: 560px;
+  line-height: 1.75;
+  opacity: 0;
+}
+
+.hero__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+}
+.hero__ghost-btn {
+  padding: 15px 30px;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--lavender);
+  border: 1px solid rgba(147,111,173,0.35);
+  border-radius: 50px;
+  transition: all 0.3s var(--ease-out);
+}
+.hero__ghost-btn:hover {
+  color: var(--white);
+  border-color: var(--purple);
+  background: rgba(225,172,244,0.06);
+}
+
+.hero__badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+}
+.hero__badge {
+  padding: 5px 14px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--purple);
+  background: rgba(225,172,244,0.08);
+  border: 1px solid rgba(225,172,244,0.18);
+  border-radius: 50px;
+}
+
+.hero__scroll {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--lavender);
+}
+.hero__scroll-line {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--purple), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.4; transform: scaleY(1); }
+  50%       { opacity: 1;   transform: scaleY(1.2); }
+}
+
+@media (max-width: 600px) {
+  .hero__content { gap: 16px; }
+  .hero__actions { flex-direction: column; width: 100%; }
+  .hero__actions .btn-glow, .hero__actions .hero__ghost-btn { width: 100%; justify-content: center; }
+  .hero__title-line { font-size: clamp(2.5rem, 14vw, 5rem); }
+}
+
+@media (max-height: 750px) {
+  .hero__title-line { font-size: clamp(3rem, 10vw, 6rem); }
+  .hero__scroll { transform: translateX(-50%) scale(0.8); bottom: 16px; }
+}
