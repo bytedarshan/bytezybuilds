@@ -11,6 +11,8 @@ import Footer from './components/Footer'
 import Dashboard from './components/Dashboard'
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -56,6 +58,8 @@ export default function App() {
         <Route path="/" element={<MainSite />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
+      <Analytics />
+      <SpeedInsights />
     </BrowserRouter>
   )
 }
