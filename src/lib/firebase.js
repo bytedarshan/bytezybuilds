@@ -39,59 +39,11 @@ export async function uploadProjectFile(file) {
   return await getDownloadURL(fileRef)
 }
 
-/* ── Client Aggregation Logic ─────────────────────── */
-async function aggregateClient(name, email, mobile) {
-  if (!name) return null
-  
-  // Find all clients
-  const snap = await getDocs(collection(db, 'clients'))
-  const clients = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-  
-  // Find matching client: same name AND (same email OR same mobile)
-  const match = clients.find(c => 
-    c.name.toLowerCase() === name.toLowerCase() &&
-    (
-      (email && c.emails && c.emails.includes(email)) ||
-      (mobile && c.mobiles && c.mobiles.includes(mobile))
-    )
-  )
-
-  if (match) {
-    // Update if there are new emails or mobiles
-    const newEmails = new Set(match.emails || [])
-    if (email) newEmails.add(email)
-      
-    const newMobiles = new Set(match.mobiles || [])
-    if (mobile) newMobiles.add(mobile)
-      
-    if (newEmails.size > (match.emails || []).length || newMobiles.size > (match.mobiles || []).length) {
-      await updateDoc(doc(db, 'clients', match.id), {
-        emails: Array.from(newEmails),
-        mobiles: Array.from(newMobiles)
-      })
-    }
-    return match.id
-  } else {
-    // Create new client
-    const ref = await addDoc(collection(db, 'clients'), {
-      name: name,
-      emails: email ? [email] : [],
-      mobiles: mobile ? [mobile] : [],
-      createdAt: serverTimestamp()
-    })
-    return ref.id
-  }
-}
-
 /* ── Write helpers ────────────────────────────────── */
 
 export async function saveBooking(data) {
-  // Aggregate client before saving booking
-  const clientId = await aggregateClient(data.clientName, data.clientEmail, data.clientMobile)
-  
   const ref = await addDoc(collection(db, 'bookings'), {
     ...data,
-    clientId,
     status: 'pending',
     createdAt: serverTimestamp(),
   })
@@ -99,12 +51,8 @@ export async function saveBooking(data) {
 }
 
 export async function saveContact(data) {
-  // Also aggregate contacts into clients
-  const clientId = await aggregateClient(data.name, data.email, data.mobile)
-
   const ref = await addDoc(collection(db, 'contacts'), {
     ...data,
-    clientId,
     status: 'unread',
     createdAt: serverTimestamp(),
   })
