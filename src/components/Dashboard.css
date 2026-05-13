@@ -489,19 +489,47 @@
 .dash-login__back:hover { color: var(--white); }
 
 @media (max-width: 900px) {
+  .dashboard { flex-direction: column; }
+  .dash-sidebar { 
+    width: 100%; 
+    height: auto; 
+    position: static; 
+    border-right: none; 
+    border-bottom: 1px solid rgba(225, 172, 244, 0.08); 
+    padding: 20px;
+  }
+  .dash-sidebar__nav { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+  .dash-nav-btn { width: auto; flex: 1; justify-content: center; min-width: 100px; padding: 10px; }
+  .dash-nav-count { margin-left: 6px; }
+  .dash-sidebar__actions { flex-direction: row; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+  
   .dash-main { padding: 24px 20px; }
-  .dash-header { flex-direction: column; }
+  .dash-header { flex-direction: column; gap: 14px; margin-bottom: 24px; }
   .dash-search { width: 100%; }
+  .dash-stats { grid-template-columns: 1fr; gap: 12px; margin-bottom: 24px; }
+  
   .dash-table__header { display: none; }
+  .dash-table__body { padding: 0 10px 10px 10px; }
   .db-row {
     grid-template-columns: 1fr;
-    padding: 14px;
-    gap: 6px;
-    position: relative;
+    padding: 16px;
+    gap: 8px;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    background: rgba(255,255,255,0.02);
   }
+  .db-row:last-child { border-bottom: 1px solid rgba(255,255,255,0.05); }
   .db-row__view {
-    position: absolute;
-    top: 14px;
-    right: 14px;
+    margin-top: 10px;
+    text-align: center;
+    width: 100%;
   }
+  .db-row__actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  
+  .dash-login__card { padding: 30px 24px; }
 }
