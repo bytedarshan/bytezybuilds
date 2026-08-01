@@ -1,4 +1,5 @@
 import React from 'react'
+import { useContent } from '../context/ContentContext'
 import './Footer.css'
 
 const links = {
@@ -8,12 +9,13 @@ const links = {
 }
 
 export default function Footer() {
+  const { siteCopy } = useContent()
+
   return (
     <footer className="footer">
       <div className="glow-divider" />
       <div className="container">
         <div className="footer__inner">
-          {/* Brand */}
           <div className="footer__brand">
             <div className="footer__logo">
               <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
@@ -26,8 +28,7 @@ export default function Footer() {
               <span>Bytezy<span>Builds</span></span>
             </div>
             <p className="footer__tagline">
-              Engineering premium digital experiences<br />
-              with React, Node.js &amp; three.js.
+              {siteCopy.footerTagline}
             </p>
             <div className="footer__socials">
               {['GitHub', 'LinkedIn', 'Twitter', 'Dribbble'].map(s => (
@@ -36,7 +37,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Link columns */}
           {Object.entries(links).map(([col, items]) => (
             <div className="footer__col" key={col}>
               <h4 className="footer__col-title">{col}</h4>
@@ -49,10 +49,9 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Bottom bar */}
         <div className="footer__bottom">
           <span>© {new Date().getFullYear()} Bytezy Builds. All rights reserved.</span>
-          <span className="footer__built">Built with React + Three.js + GSAP</span>
+          <span className="footer__built">{siteCopy.footerBuiltLocation}</span>
         </div>
       </div>
     </footer>

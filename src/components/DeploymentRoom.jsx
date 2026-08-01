@@ -1,15 +1,16 @@
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import emailjs from '@emailjs/browser'
-import { saveBooking, uploadProjectFile } from '../lib/firebase'
+import { saveBooking } from '../lib/firebase'
+import { useMagnetic } from '../hooks/useMagnetic'
+import { useContent } from '../context/ContentContext'
 import './DeploymentRoom.css'
 
-/* ── EmailJS credentials ────────────────────────── */
 const EJS_SERVICE  = import.meta.env.VITE_EMAILJS_SERVICE_ID  || 'service_tg9wn17'
 const EJS_TEMPLATE = import.meta.env.VITE_EMAILJS_TEMPLATE_BOOKING
 const EJS_KEY      = import.meta.env.VITE_EMAILJS_PUBLIC_KEY  || 'dRP3wxLYd8RnY_Fxp'
 
-const STEPS = ['Website Info', 'Business Details', 'Upload & Deploy']
+const STEPS = ['Project Details', 'Your Information', 'Attach & Submit']
 
 const SITE_TYPES = [
   'E-Commerce Store',
@@ -22,7 +23,70 @@ const SITE_TYPES = [
   'Booking Platform',
 ]
 
-/* ── Per-step validators ────────────────────────── */
+function CustomSelect({ value, onChange, onBlur, options, placeholder, hasError }) {
+  const [open, setOpen] = useState(false)
+  const containerRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setOpen(false)
+        if (onBlur) onBlur()
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [onBlur])
+
+  const handleSelect = (val) => {
+    onChange(val)
+    setOpen(false)
+  }
+
+  return (
+    <div className={`custom-select ${open ? 'custom-select--open' : ''} ${hasError ? 'custom-select--err' : ''}`} ref={containerRef}>
+      <button
+        type="button"
+        className="custom-select__trigger"
+        onClick={() => setOpen(!open)}
+        data-cursor
+      >
+        <span className={!value ? 'custom-select__placeholder' : ''}>
+          {value || placeholder}
+        </span>
+        <svg
+          className={`custom-select__arrow ${open ? 'custom-select__arrow--rotated' : ''}`}
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+        >
+          <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+
+      {open && (
+        <div className="custom-select__menu">
+          {options.map((opt) => (
+            <div
+              key={opt}
+              className={`custom-select__option ${value === opt ? 'custom-select__option--selected' : ''}`}
+              onClick={() => handleSelect(opt)}
+            >
+              <span>{opt}</span>
+              {value === opt && (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2.5 7L5.5 10L11.5 4" stroke="var(--indigo-deep)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function validateStep0(form) {
   const e = {}
   if (!form.websiteName.trim())  e.websiteName = 'Project name is required'
@@ -63,7 +127,6 @@ function uploadToCloudinary(file) {
   })
 }
 
-/* ── Drop Zone ───────────────────────────────────── */
 function DropZone({ files, setFiles }) {
   const onDrop = useCallback(accepted => {
     setFiles(prev => [...prev, ...accepted])
@@ -91,8 +154,8 @@ function DropZone({ files, setFiles }) {
         <input {...getInputProps()} />
         <div className="dropzone__icon">
           <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-            <path d="M18 6v18M10 14l8-8 8 8" stroke="#E1ACF4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M6 28h24" stroke="#936FAD" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M18 6v18M10 14l8-8 8 8" stroke="var(--indigo-deep)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M6 28h24" stroke="var(--text-muted-dark)" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
         </div>
         <p className="dropzone__title">
@@ -110,8 +173,8 @@ function DropZone({ files, setFiles }) {
             <li key={f.name} className="dropzone__file">
               <span className="dropzone__file-icon">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M3 1h5l3 3v9H3V1z" stroke="#E1ACF4" strokeWidth="1.2"/>
-                  <path d="M8 1v3h3"           stroke="#E1ACF4" strokeWidth="1.2"/>
+                  <path d="M3 1h5l3 3v9H3V1z" stroke="var(--indigo-deep)" strokeWidth="1.2"/>
+                  <path d="M8 1v3h3"           stroke="var(--indigo-deep)" strokeWidth="1.2"/>
                 </svg>
               </span>
               <span className="dropzone__file-name">{f.name}</span>
@@ -125,11 +188,11 @@ function DropZone({ files, setFiles }) {
   )
 }
 
-/* ── Main Component ──────────────────────────────── */
 export default function DeploymentRoom() {
+  const { siteCopy } = useContent()
   const [step, setStep]     = useState(0)
   const [files, setFiles]   = useState([])
-  const [status, setStatus] = useState('idle') // idle | loading | success | error
+  const [status, setStatus] = useState('idle')
   const [form, setForm]     = useState({
     websiteName:     '',
     websiteType:     '',
@@ -140,7 +203,8 @@ export default function DeploymentRoom() {
   })
   const [errors, setErrors]   = useState({})
   const [touched, setTouched] = useState({})
-  const terminalRef = useRef()
+  const panelRef = useRef()
+  const magnetic = useMagnetic(70, 0.3)
 
   const update = (k, v) => {
     setForm(prev => ({ ...prev, [k]: v }))
@@ -148,12 +212,10 @@ export default function DeploymentRoom() {
   }
   const blur = (k) => setTouched(prev => ({ ...prev, [k]: true }))
 
-  /* ── Step Navigation ──────────────────────────── */
   const next = () => {
     const errs = step === 0 ? validateStep0(form) : validateStep1(form)
     if (Object.keys(errs).length) {
       setErrors(errs)
-      // Mark all fields for this step as touched
       const touchMap = {}
       Object.keys(errs).forEach(k => { touchMap[k] = true })
       setTouched(prev => ({ ...prev, ...touchMap }))
@@ -164,7 +226,6 @@ export default function DeploymentRoom() {
   }
   const prev = () => { if (step > 0) setStep(s => s - 1) }
 
-  /* ── Final Submit ─────────────────────────────── */
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (step < STEPS.length - 1) {
@@ -172,13 +233,12 @@ export default function DeploymentRoom() {
       return
     }
     if (files.length === 0) {
-      setErrors({ form: 'Please attach at least one file before deploying.' })
+      setErrors({ form: 'Please attach at least one file before submitting.' })
       return
     }
 
     setStatus('loading')
     try {
-      // 1️⃣ Upload Files to Cloudinary
       const uploadedFiles = await Promise.all(
         files.map(async f => {
           const url = await uploadToCloudinary(f)
@@ -186,7 +246,6 @@ export default function DeploymentRoom() {
         })
       )
 
-      // 2️⃣ Firebase Firestore
       await saveBooking({
         websiteName:     form.websiteName,
         websiteType:     form.websiteType,
@@ -197,7 +256,6 @@ export default function DeploymentRoom() {
         files: uploadedFiles,
       })
 
-      // 3️⃣ EmailJS notification (Fire and forget)
       if (EJS_TEMPLATE) {
         emailjs.send(
           EJS_SERVICE,
@@ -219,14 +277,13 @@ export default function DeploymentRoom() {
       setStatus('success')
     } catch (err) {
       console.error('[Booking]', err)
-      setErrors({ form: err.message || 'Transmission failed.' })
+      setErrors({ form: err.message || 'Submission failed.' })
       setStatus('error')
     }
   }
 
   const fieldErr = (k) => touched[k] && errors[k]
 
-  /* ── Reset ────────────────────────────────────── */
   const reset = () => {
     setStatus('idle')
     setStep(0)
@@ -237,46 +294,33 @@ export default function DeploymentRoom() {
   }
 
   return (
-    <section id="deploy" className="section deployment">
-      <div className="deployment__glow" />
+    <section id="deploy" className="section section--light deployment">
 
       <div className="container">
         <div className="deployment__head gsap-reveal">
-          <span className="section-label">The Deployment Room</span>
-          <h2>Launch Your Project</h2>
+          <span className="section-label">{siteCopy.deployLabel}</span>
+          <h2>{siteCopy.deployHeading}</h2>
           <p className="deployment__lead">
-            Complete the briefing sequence below. Our team will respond within 24 hours
-            with a tailored project roadmap and timeline.
+            {siteCopy.deployLead}
           </p>
         </div>
 
-        {/* Terminal Panel */}
-        <div className="terminal glass gsap-reveal" ref={terminalRef}>
-          {/* Terminal header bar */}
-          <div className="terminal__bar">
-            <div className="terminal__dots">
-              <span style={{ background: '#FF5F57' }} />
-              <span style={{ background: '#FFBD2E' }} />
-              <span style={{ background: '#28C840' }} />
-            </div>
-            <span className="terminal__title">bytezy-builds ~ project-onboarding</span>
-            <span className="terminal__badge">v2.0.1</span>
+        <div className="deploy-panel gsap-reveal" ref={panelRef}>
+          <div className="deploy-panel__bar">
+            <span className="deploy-panel__title">Project Brief</span>
           </div>
 
-          <div className="terminal__scanline" />
-
-          {/* Step progress */}
-          <div className="terminal__steps">
+          <div className="deploy-panel__steps">
             {STEPS.map((s, i) => (
               <div
                 key={s}
-                className={`terminal__step ${i === step ? 'terminal__step--active' : ''} ${i < step ? 'terminal__step--done' : ''}`}
+                className={`deploy-panel__step ${i === step ? 'deploy-panel__step--active' : ''} ${i < step ? 'deploy-panel__step--done' : ''}`}
                 onClick={() => i < step && setStep(i)}
               >
-                <div className="terminal__step-num">
+                <div className="deploy-panel__step-num">
                   {i < step ? (
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M2 6l3 3 5-5" stroke="#E1ACF4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M2 6l3 3 5-5" stroke="var(--indigo-deep)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   ) : i + 1}
                 </div>
@@ -285,22 +329,21 @@ export default function DeploymentRoom() {
             ))}
           </div>
 
-          {/* ══ SUCCESS STATE ══ */}
           {status === 'success' ? (
-            <div className="terminal__success">
-              <div className="terminal__success-icon">
+            <div className="deploy-panel__success">
+              <div className="deploy-panel__success-icon">
                 <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                  <circle cx="24" cy="24" r="22" stroke="#E1ACF4" strokeWidth="1.5"/>
-                  <path d="M14 24l8 8 12-14" stroke="#E1ACF4" strokeWidth="2.5"
+                  <circle cx="24" cy="24" r="22" stroke="var(--indigo-deep)" strokeWidth="1.5"/>
+                  <path d="M14 24l8 8 12-14" stroke="var(--indigo-deep)" strokeWidth="2.5"
                         strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <h3>Transmission Successful</h3>
+              <h3>Brief Received</h3>
               <p>Your project brief has been received and saved. Expect a response within 24 hours.</p>
-              <div className="terminal__success-details">
-                <span>✓ Saved to Firestore</span>
+              <div className="deploy-panel__success-details">
+                <span>✓ Saved to our system</span>
                 <span>✓ Email notification sent</span>
-                <span>✓ {files.length} file{files.length !== 1 ? 's' : ''} logged</span>
+                <span>✓ {files.length} file{files.length !== 1 ? 's' : ''} attached</span>
               </div>
               <button className="btn-glow" onClick={reset}>
                 Submit Another Project
@@ -308,17 +351,13 @@ export default function DeploymentRoom() {
             </div>
 
           ) : (
-            <form className="terminal__form" onSubmit={handleSubmit} noValidate>
+            <form className="deploy-panel__form" onSubmit={handleSubmit} noValidate>
 
-              {/* ══ STEP 0 — Website Info ══ */}
               {step === 0 && (
-                <div className="terminal__panel">
-                  <div className="terminal__prompt">
-                    <span className="terminal__prompt-sym">›</span>
-                    <span>Initialize project parameters</span>
-                  </div>
-                  <div className="terminal__fields">
-                    <div className={`terminal__field ${fieldErr('websiteName') ? 'terminal__field--err' : ''}`}>
+                <div className="deploy-panel__panel">
+                  <div className="deploy-panel__section-title">Project Details</div>
+                  <div className="deploy-panel__fields">
+                    <div className={`deploy-panel__field ${fieldErr('websiteName') ? 'deploy-panel__field--err' : ''}`}>
                       <label className="field-label">Website / Project Name</label>
                       <input
                         className="field-input"
@@ -329,35 +368,28 @@ export default function DeploymentRoom() {
                       />
                       {fieldErr('websiteName') && <span className="field-err">{errors.websiteName}</span>}
                     </div>
-                    <div className={`terminal__field ${fieldErr('websiteType') ? 'terminal__field--err' : ''}`}>
+                    <div className={`deploy-panel__field ${fieldErr('websiteType') ? 'deploy-panel__field--err' : ''}`}>
                       <label className="field-label">Type of Website</label>
-                      <select
-                        className="field-select"
+                      <CustomSelect
                         value={form.websiteType}
-                        onChange={e => update('websiteType', e.target.value)}
+                        onChange={val => update('websiteType', val)}
                         onBlur={() => blur('websiteType')}
-                      >
-                        <option value="">— Select a type —</option>
-                        {SITE_TYPES.map(t => (
-                          <option key={t} value={t}>{t}</option>
-                        ))}
-                      </select>
+                        options={SITE_TYPES}
+                        placeholder="— Select a type —"
+                        hasError={Boolean(fieldErr('websiteType'))}
+                      />
                       {fieldErr('websiteType') && <span className="field-err">{errors.websiteType}</span>}
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* ══ STEP 1 — Business Details ══ */}
               {step === 1 && (
-                <div className="terminal__panel">
-                  <div className="terminal__prompt">
-                    <span className="terminal__prompt-sym">›</span>
-                    <span>Define business context &amp; goals</span>
-                  </div>
-                  <div className="terminal__fields">
-                    <div className="terminal__row">
-                      <div className={`terminal__field ${fieldErr('clientName') ? 'terminal__field--err' : ''}`}>
+                <div className="deploy-panel__panel">
+                  <div className="deploy-panel__section-title">Your Information</div>
+                  <div className="deploy-panel__fields">
+                    <div className="deploy-panel__row">
+                      <div className={`deploy-panel__field ${fieldErr('clientName') ? 'deploy-panel__field--err' : ''}`}>
                         <label className="field-label">Your Name</label>
                         <input
                           className="field-input"
@@ -368,7 +400,7 @@ export default function DeploymentRoom() {
                         />
                         {fieldErr('clientName') && <span className="field-err">{errors.clientName}</span>}
                       </div>
-                      <div className={`terminal__field ${fieldErr('clientEmail') ? 'terminal__field--err' : ''}`}>
+                      <div className={`deploy-panel__field ${fieldErr('clientEmail') ? 'deploy-panel__field--err' : ''}`}>
                         <label className="field-label">Business Email</label>
                         <input
                           className="field-input"
@@ -380,7 +412,7 @@ export default function DeploymentRoom() {
                         />
                         {fieldErr('clientEmail') && <span className="field-err">{errors.clientEmail}</span>}
                       </div>
-                      <div className={`terminal__field ${fieldErr('clientMobile') ? 'terminal__field--err' : ''}`}>
+                      <div className={`deploy-panel__field ${fieldErr('clientMobile') ? 'deploy-panel__field--err' : ''}`}>
                         <label className="field-label">Mobile Number</label>
                         <input
                           className="field-input"
@@ -393,8 +425,8 @@ export default function DeploymentRoom() {
                         {fieldErr('clientMobile') && <span className="field-err">{errors.clientMobile}</span>}
                       </div>
                     </div>
-                    <div className={`terminal__field ${fieldErr('businessDetails') ? 'terminal__field--err' : ''}`}>
-                      <label className="field-label">Business Details &amp; Vision</label>
+                    <div className={`deploy-panel__field ${fieldErr('businessDetails') ? 'deploy-panel__field--err' : ''}`}>
+                      <label className="field-label">Business Details & Vision</label>
                       <textarea
                         className="field-textarea"
                         rows={6}
@@ -409,32 +441,28 @@ export default function DeploymentRoom() {
                 </div>
               )}
 
-              {/* ══ STEP 2 — Upload & Deploy ══ */}
               {step === 2 && (
-                <div className="terminal__panel">
-                  <div className="terminal__prompt">
-                    <span className="terminal__prompt-sym">›</span>
-                    <span>Upload supporting documents &amp; launch</span>
-                  </div>
+                <div className="deploy-panel__panel">
+                  <div className="deploy-panel__section-title">Attach Files & Submit</div>
                   <DropZone files={files} setFiles={setFiles} />
-                  <div className="terminal__summary">
-                    <div className="terminal__summary-row">
+                  <div className="deploy-panel__summary">
+                    <div className="deploy-panel__summary-row">
                       <span>Project</span>
                       <strong>{form.websiteName || '—'}</strong>
                     </div>
-                    <div className="terminal__summary-row">
+                    <div className="deploy-panel__summary-row">
                       <span>Type</span>
                       <strong>{form.websiteType || '—'}</strong>
                     </div>
-                    <div className="terminal__summary-row">
+                    <div className="deploy-panel__summary-row">
                       <span>Client</span>
                       <strong>{form.clientName || '—'}</strong>
                     </div>
-                    <div className="terminal__summary-row">
+                    <div className="deploy-panel__summary-row">
                       <span>Email</span>
                       <strong>{form.clientEmail || '—'}</strong>
                     </div>
-                    <div className="terminal__summary-row">
+                    <div className="deploy-panel__summary-row">
                       <span>Files</span>
                       <strong>{files.length} attached</strong>
                     </div>
@@ -442,10 +470,9 @@ export default function DeploymentRoom() {
                 </div>
               )}
 
-              {/* Navigation buttons */}
-              <div className="terminal__nav">
+              <div className="deploy-panel__nav">
                 {step > 0 && (
-                  <button type="button" className="terminal__back" onClick={prev} disabled={status === 'loading'}>
+                  <button type="button" className="deploy-panel__back" onClick={prev} disabled={status === 'loading'}>
                     ← Back
                   </button>
                 )}
@@ -455,32 +482,40 @@ export default function DeploymentRoom() {
                   </button>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-                    <button
-                      type="submit"
-                      className={`btn-glow ${status === 'loading' ? 'btn-glow--loading' : ''}`}
-                      disabled={status === 'loading' || files.length === 0}
-                      id="deploy-submit-btn"
-                      style={files.length === 0 ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                    <div
+                      onMouseEnter={magnetic.onMouseEnter}
+                      onMouseMove={magnetic.onMouseMove}
+                      onMouseLeave={magnetic.onMouseLeave}
+                      style={{ display: 'inline-flex' }}
                     >
-                      {status === 'loading' ? (
-                        <>
-                          <span className="terminal__spinner" />
-                          Deploying Brief…
-                        </>
-                      ) : (
-                        '🚀 Deploy Project Brief'
-                      )}
-                    </button>
+                      <button
+                        type="submit"
+                        className={`btn-glow ${status === 'loading' ? 'btn-glow--loading' : ''}`}
+                        disabled={status === 'loading' || files.length === 0}
+                        ref={magnetic.ref}
+                        id="deploy-submit-btn"
+                        style={files.length === 0 ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                      >
+                        {status === 'loading' ? (
+                          <>
+                            <span className="deploy-panel__spinner" />
+                            Submitting…
+                          </>
+                        ) : (
+                          siteCopy.deploySubmitCta
+                        )}
+                      </button>
+                    </div>
                     {files.length === 0 && (
-                      <span style={{ fontSize: '0.75rem', color: '#ff8a8a', textAlign: 'right' }}>* Upload at least 1 file to deploy</span>
+                      <span style={{ fontSize: '0.75rem', color: '#d44', textAlign: 'right' }}>* Upload at least 1 file to submit</span>
                     )}
                   </div>
                 )}
               </div>
 
               {status === 'error' && (
-                <p className="terminal__error" style={{ whiteSpace: 'pre-wrap' }}>
-                  ⚠ Transmission failed. {errors.form || 'Check your connection and try again.'}
+                <p className="deploy-panel__error" style={{ whiteSpace: 'pre-wrap' }}>
+                  Submission failed. {errors.form || 'Check your connection and try again.'}
                 </p>
               )}
             </form>

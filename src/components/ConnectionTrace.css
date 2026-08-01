@@ -1,0 +1,17 @@
+/* ── Connection Trace SVG Overlay ──────────────── */
+.connection-trace {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 8999; /* Below navbar (9000) but above content */
+}
+
+.connection-trace__line {
+  stroke: var(--indigo);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  fill: none;
+  opacity: 0.35;
+}

@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 import emailjs from '@emailjs/browser'
 import { saveContact } from '../lib/firebase'
+import { useMagnetic } from '../hooks/useMagnetic'
+import { useContent } from '../context/ContentContext'
 import './Contact.css'
 
-/* ── EmailJS credentials ────────────────────────── */
 const EJS_SERVICE  = import.meta.env.VITE_EMAILJS_SERVICE_ID  || 'service_tg9wn17'
 const EJS_TEMPLATE = import.meta.env.VITE_EMAILJS_TEMPLATE_CONTACT
 const EJS_KEY      = import.meta.env.VITE_EMAILJS_PUBLIC_KEY  || 'dRP3wxLYd8RnY_Fxp'
 
-/* ── Field validator ─────────────────────────────── */
 function validate(form) {
   const errors = {}
   if (!form.name.trim())              errors.name    = 'Name is required'
@@ -25,14 +25,15 @@ function validate(form) {
 }
 
 export default function Contact() {
+  const { siteCopy } = useContent()
   const [form, setForm]     = useState({ name: '', email: '', mobile: '', message: '' })
   const [errors, setErrors] = useState({})
   const [touched, setTouched] = useState({})
-  const [status, setStatus] = useState('idle') // idle | loading | success | error
+  const [status, setStatus] = useState('idle')
+  const magnetic = useMagnetic(70, 0.3)
 
   const update = (k, v) => {
     setForm(prev => ({ ...prev, [k]: v }))
-    // Clear error on change
     if (errors[k]) setErrors(prev => ({ ...prev, [k]: '' }))
   }
 
@@ -49,7 +50,6 @@ export default function Contact() {
 
     setStatus('loading')
     try {
-      // 1️⃣ Save to Firebase Firestore
       await saveContact({
         name:    form.name,
         email:   form.email,
@@ -57,7 +57,6 @@ export default function Contact() {
         message: form.message,
       })
 
-      // 2️⃣ Send email notification via EmailJS
       if (EJS_TEMPLATE) {
         await emailjs.send(
           EJS_SERVICE,
@@ -87,17 +86,15 @@ export default function Contact() {
 
   return (
     <section id="contact" className="section contact">
-      <div className="contact__glow" />
+      <div className="contact__gradient" />
 
       <div className="container">
         <div className="contact__inner">
-          {/* ── Left col ── */}
           <div className="contact__left gsap-reveal">
-            <span className="section-label">Get In Touch</span>
-            <h2>Let's Build<br /><span className="contact__accent">Something Great</span></h2>
+            <span className="section-label">{siteCopy.contactLabel}</span>
+            <h2>{siteCopy.contactHeading}<br /><span className="contact__accent">{siteCopy.contactHeadingAccent}</span></h2>
             <p className="contact__desc">
-              Have a project in mind? Or just want to explore what's possible?
-              Drop us a message and we'll get back to you within 24 hours.
+              {siteCopy.contactDesc}
             </p>
 
             <div className="contact__info">
@@ -110,7 +107,7 @@ export default function Contact() {
                     </svg>
                   ),
                   label: 'Founder',
-                  value: 'Darshan Challani',
+                  value: siteCopy.contactFounderName,
                 },
                 {
                   icon: (
@@ -120,7 +117,7 @@ export default function Contact() {
                     </svg>
                   ),
                   label: 'Email',
-                  value: 'darshan.challani18@gmail.com',
+                  value: siteCopy.contactFounderEmail,
                 },
                 {
                   icon: (
@@ -130,7 +127,7 @@ export default function Contact() {
                     </svg>
                   ),
                   label: 'Mobile',
-                  value: '+91 9244550030',
+                  value: siteCopy.contactFounderMobile,
                 },
                 {
                   icon: (
@@ -140,7 +137,7 @@ export default function Contact() {
                     </svg>
                   ),
                   label: 'Location',
-                  value: 'Bangaluru',
+                  value: siteCopy.contactFounderLocation,
                 },
               ].map(item => (
                 <div className="contact__info-item" key={item.label}>
@@ -154,11 +151,9 @@ export default function Contact() {
             </div>
           </div>
 
-          {/* ── Right col — form ── */}
           <div className="contact__right gsap-reveal">
             <div className="contact__form-wrap glass">
 
-              {/* ── Success State ── */}
               {status === 'success' ? (
                 <div className="contact__success">
                   <div className="contact__success-icon">
@@ -168,8 +163,8 @@ export default function Contact() {
                             strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
-                  <h3>Transmission Successful</h3>
-                  <p>Your message is in. We'll respond within 24 hours.</p>
+                  <h3>Message Sent</h3>
+                  <p>Thanks for reaching out. We'll respond within 24 hours.</p>
                   <button className="btn-glow" onClick={() => setStatus('idle')}>
                     Send Another →
                   </button>
@@ -179,7 +174,6 @@ export default function Contact() {
                 <form className="contact__form" onSubmit={handleSubmit} noValidate>
                   <h3 className="contact__form-title">Send a Message</h3>
 
-                  {/* Name */}
                   <div className={`contact__field ${fieldErr('name') ? 'contact__field--err' : ''}`}>
                     <label className="field-label">Your Name</label>
                     <input
@@ -192,7 +186,6 @@ export default function Contact() {
                     {fieldErr('name') && <span className="field-err">{errors.name}</span>}
                   </div>
 
-                  {/* Email */}
                   <div className={`contact__field ${fieldErr('email') ? 'contact__field--err' : ''}`}>
                     <label className="field-label">Email Address</label>
                     <input
@@ -206,7 +199,6 @@ export default function Contact() {
                     {fieldErr('email') && <span className="field-err">{errors.email}</span>}
                   </div>
 
-                  {/* Mobile */}
                   <div className={`contact__field ${fieldErr('mobile') ? 'contact__field--err' : ''}`}>
                     <label className="field-label">Mobile Number</label>
                     <input
@@ -220,7 +212,6 @@ export default function Contact() {
                     {fieldErr('mobile') && <span className="field-err">{errors.mobile}</span>}
                   </div>
 
-                  {/* Message */}
                   <div className={`contact__field ${fieldErr('message') ? 'contact__field--err' : ''}`}>
                     <label className="field-label">Message</label>
                     <textarea
@@ -234,24 +225,31 @@ export default function Contact() {
                     {fieldErr('message') && <span className="field-err">{errors.message}</span>}
                   </div>
 
-                  {/* Submit */}
-                  <button
-                    type="submit"
-                    className={`btn-glow contact__submit ${status === 'loading' ? 'btn-glow--loading' : ''}`}
-                    disabled={status === 'loading'}
-                    id="contact-submit-btn"
+                  <div
+                    onMouseEnter={magnetic.onMouseEnter}
+                    onMouseMove={magnetic.onMouseMove}
+                    onMouseLeave={magnetic.onMouseLeave}
+                    style={{ width: '100%' }}
                   >
-                    {status === 'loading' ? (
-                      <>
-                        <span className="contact__spinner" />
-                        Transmitting…
-                      </>
-                    ) : 'Send Message →'}
-                  </button>
+                    <button
+                      type="submit"
+                      className={`btn-glow contact__submit ${status === 'loading' ? 'btn-glow--loading' : ''}`}
+                      disabled={status === 'loading'}
+                      ref={magnetic.ref}
+                      id="contact-submit-btn"
+                    >
+                      {status === 'loading' ? (
+                        <>
+                          <span className="contact__spinner" />
+                          Sending…
+                        </>
+                      ) : 'Send Message →'}
+                    </button>
+                  </div>
 
                   {status === 'error' && (
                     <p className="contact__error">
-                      ⚠ Submission failed. Check your connection and try again.
+                      Submission failed. Check your connection and try again.
                     </p>
                   )}
                 </form>

@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { ContentProvider } from './context/ContentContext'
 import CustomCursor from './components/CustomCursor'
+import ConnectionTrace from './components/ConnectionTrace'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Services from './components/Services'
@@ -38,6 +40,7 @@ function MainSite() {
   return (
     <>
       <Navbar />
+      <ConnectionTrace />
       <main>
         <Hero />
         <Services />
@@ -52,14 +55,16 @@ function MainSite() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <CustomCursor />
-      <Routes>
-        <Route path="/" element={<MainSite />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Routes>
-      <Analytics />
-      <SpeedInsights />
-    </BrowserRouter>
+    <ContentProvider>
+      <BrowserRouter>
+        <CustomCursor />
+        <Routes>
+          <Route path="/" element={<MainSite />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Routes>
+        <Analytics />
+        <SpeedInsights />
+      </BrowserRouter>
+    </ContentProvider>
   )
 }
