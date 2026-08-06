@@ -184,10 +184,11 @@
 }
 
 @media (max-width: 600px) {
-  .hero__content { gap: 16px; }
-  .hero__actions { flex-direction: column; width: 100%; }
-  .hero__actions .btn-glow, .hero__actions .hero__ghost-btn { width: 100%; justify-content: center; }
-  .hero__title-line { font-size: clamp(2.5rem, 14vw, 5rem); }
+  .hero__content { gap: 16px; padding: 0 16px; }
+  .hero__actions { flex-direction: column; width: 100%; max-width: 320px; align-items: stretch; }
+  .hero__actions > div { width: 100%; display: flex !important; }
+  .hero__actions .btn-glow, .hero__actions .hero__ghost-btn { width: 100%; justify-content: center; padding: 14px 24px; font-size: 0.95rem; }
+  .hero__title-line { font-size: clamp(2.5rem, 13vw, 4.5rem); }
   .hero__byline { font-size: 0.8rem; letter-spacing: 0.1em; }
 }
 

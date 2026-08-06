@@ -394,10 +394,13 @@
 }
 
 @media (max-width: 640px) {
-  .deployment { padding: 80px 0 60px; }
-  .deploy-panel__form { padding: 20px; }
-  .deploy-panel__steps { padding: 20px 10px 0; gap: 4px; }
-  .deploy-panel__step { font-size: 0.6rem; letter-spacing: 0; }
+  .deployment { padding: 70px 0 50px; }
+  .deploy-panel__form { padding: 20px 16px; }
+  .deploy-panel__steps { padding: 16px 8px 0; gap: 4px; }
+  .deploy-panel__step { font-size: 0.65rem; letter-spacing: 0; text-align: center; }
+  .deploy-panel__step span { font-size: 0.62rem; line-height: 1.2; }
   .deploy-panel__step-num { width: 24px; height: 24px; font-size: 0.65rem; }
-  .deploy-panel__steps::after { top: 32px; left: 24px; right: 24px; }
+  .deploy-panel__steps::after { top: 28px; left: 20px; right: 20px; }
+  .deploy-panel__nav { flex-direction: column-reverse; gap: 12px; align-items: stretch; }
+  .deploy-panel__nav .btn-glow, .deploy-panel__back { width: 100%; justify-content: center; text-align: center; }
 }

@@ -582,76 +582,69 @@
 
 @media (max-width: 768px) {
   .services {
-    padding: 70px 0;
+    padding: 60px 0;
     min-height: auto;
   }
 
+  .services__layout {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
   .svc-reel-viewport {
-    height: 360px;
-    border-radius: 18px;
+    height: auto;
+    border-radius: 20px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .svc-reel-track {
+    height: auto;
+    gap: 16px;
+    transform: none !important;
   }
 
   .svc-reel-card {
-    padding: 20px 16px;
-    gap: 8px;
+    height: auto;
+    opacity: 1 !important;
+    transform: none !important;
+    padding: 24px 20px;
+    background: #0f0c24;
+    border: 1px solid rgba(225, 172, 244, 0.18);
+    border-radius: 20px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
   }
 
   .svc-reel-card__title {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
   }
 
   .svc-reel-card__sub {
-    font-size: 0.82rem;
+    font-size: 0.88rem;
   }
 
   .svc-reel-card__body p {
-    font-size: 0.8rem;
-    line-height: 1.55;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  .svc-reel-progress {
+    display: none;
   }
 
   .services__stage-viewport {
-    height: 320px;
-    transform: scale(0.78);
-    transform-origin: top center;
-    margin-top: -10px;
-  }
-
-  /* Compact inline layout for floating artifacts on mobile */
-  .svc-ui-tree__card--floating,
-  .svc-ui-tree__card--metric,
-  .svc-api-pipeline__floating,
-  .svc-cloud-chamber__guarantee {
-    position: relative;
-    top: auto;
-    bottom: auto;
-    left: auto;
-    right: auto;
-    margin-top: 10px;
-    width: 100%;
-    transform: none;
-    padding: 10px 14px;
-  }
-
-  .svc-ui-tree__score {
-    font-size: 1.6rem;
+    display: none;
   }
 }
 
 @media (max-width: 480px) {
   .services {
-    padding: 60px 0;
-  }
-
-  .svc-reel-viewport {
-    height: 340px;
-  }
-
-  .services__stage-viewport {
-    height: 300px;
-    transform: scale(0.72);
+    padding: 50px 0;
   }
 
   .svc-reel-card {
-    padding: 16px 14px;
+    padding: 20px 16px;
   }
 }
