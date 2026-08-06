@@ -70,6 +70,7 @@ export default function ConnectionTrace() {
 
   useEffect(() => {
     const handleEnter = (e) => {
+      if (!e.target || typeof e.target.closest !== 'function') return
       const card = e.target.closest('[data-stitch-target]')
       if (!card || card === activeCardRef.current) return
       activeCardRef.current = card
@@ -87,6 +88,7 @@ export default function ConnectionTrace() {
     }
 
     const handleLeave = (e) => {
+      if (!e.target || typeof e.target.closest !== 'function') return
       const card = e.target.closest('[data-stitch-target]')
       if (!card) return
       if (card.contains(e.relatedTarget)) return

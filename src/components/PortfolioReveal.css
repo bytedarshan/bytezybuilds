@@ -1,0 +1,372 @@
+/* ═══════════════════════════════════════════════
+   PortfolioReveal — Pinned Scroll-Scrubbed Reveal
+   ═══════════════════════════════════════════════ */
+
+/* ── Pinned Container ────────────────────────────── */
+.portfolio-reveal {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* Background starts near-black, crossfades via CSS custom property */
+  background: var(--reveal-bg, #0a0a0f);
+  transition: background 0.05s linear;
+}
+
+/* Contextual gradient backdrop — fades in during crossfade phase */
+.portfolio-reveal__backdrop {
+  position: absolute;
+  inset: 0;
+  opacity: var(--reveal-backdrop-opacity, 0);
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 55%, rgba(38, 26, 177, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 35% at 70% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
+    linear-gradient(180deg, #0f0e1a 0%, #141225 50%, #0a0a0f 100%);
+  pointer-events: none;
+  transition: opacity 0.05s linear;
+}
+
+/* Subtle spotlight behind device */
+.portfolio-reveal__spotlight {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: var(--reveal-backdrop-opacity, 0);
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+/* ── Stage — holds the 3D-transformed device ─────── */
+.portfolio-reveal__stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 900px;
+  padding: 0 24px;
+  /* 3D transform driven by CSS custom properties set via GSAP */
+  perspective: 1200px;
+}
+
+/* ── Laptop Device Frame ─────────────────────────── */
+.portfolio-reveal__device {
+  position: relative;
+  width: 100%;
+  max-width: 780px;
+  transform:
+    rotateX(var(--reveal-rotateX, 12deg))
+    rotateY(var(--reveal-rotateY, -18deg))
+    scale(var(--reveal-scale, 1.8));
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.05s linear;
+}
+
+/* Laptop lid / screen housing */
+.portfolio-reveal__screen-wrap {
+  position: relative;
+  width: 100%;
+  background: #1a1833;
+  border-radius: 12px 12px 0 0;
+  padding: 10px 10px 0;
+  box-shadow:
+    0 0 0 1px rgba(225, 172, 244, 0.08),
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 8px 24px rgba(38, 26, 177, 0.15);
+  /* Bezel chrome fades in, but screenshot inside is always visible */
+}
+
+/* Browser chrome bar */
+.portfolio-reveal__browser-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #12102a;
+  border-radius: 8px 8px 0 0;
+}
+
+.portfolio-reveal__browser-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.portfolio-reveal__browser-dot--red { background: #ff5f56; }
+.portfolio-reveal__browser-dot--yellow { background: #ffbd2e; }
+.portfolio-reveal__browser-dot--green { background: #27c93f; }
+
+.portfolio-reveal__browser-url {
+  flex: 1;
+  margin-left: 12px;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  color: var(--lavender);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Screenshot image */
+.portfolio-reveal__screenshot {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 0;
+}
+
+/* The screenshot container — clips during macro phase */
+.portfolio-reveal__screenshot-wrap {
+  position: relative;
+  overflow: hidden;
+  line-height: 0;
+}
+
+/* Glass reflection overlay */
+.portfolio-reveal__glass {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 40%,
+    transparent 60%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Laptop base/keyboard hint */
+.portfolio-reveal__base {
+  width: 104%;
+  margin-left: -2%;
+  height: 14px;
+  background: linear-gradient(180deg, #1a1833 0%, #15132a 100%);
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: var(--reveal-frame-opacity, 0);
+  transition: opacity 0.05s linear;
+}
+
+/* Hinge notch */
+.portfolio-reveal__hinge {
+  width: 15%;
+  height: 4px;
+  margin: 0 auto;
+  background: #2a2545;
+  border-radius: 0 0 4px 4px;
+  opacity: var(--reveal-frame-opacity, 0);
+  transition: opacity 0.05s linear;
+}
+
+/* ── Text Content — fades in at end ──────────────── */
+.portfolio-reveal__content {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  margin-top: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  opacity: var(--reveal-text-opacity, 0);
+  transform: translateY(calc((1 - var(--reveal-text-opacity, 0)) * 24px));
+  transition: opacity 0.05s linear, transform 0.05s linear;
+}
+
+.portfolio-reveal__project-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+.portfolio-reveal__project-label::before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 1px;
+  background: var(--purple);
+}
+
+.portfolio-reveal__project-title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.portfolio-reveal__project-outcome {
+  font-family: var(--font-body);
+  font-size: clamp(0.88rem, 1.3vw, 1.05rem);
+  color: var(--grey);
+  max-width: 480px;
+  line-height: 1.6;
+}
+
+.portfolio-reveal__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 12px 28px;
+  font-family: var(--font-heading);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--indigo) 0%, #4930d8 50%, #6c47e0 100%);
+  border-radius: 50px;
+  border: 1px solid rgba(225, 172, 244, 0.2);
+  box-shadow: 0 4px 20px var(--glow-indigo), 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+.portfolio-reveal__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px var(--glow-indigo), 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.portfolio-reveal__cta-arrow {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Scroll Progress Indicator ───────────────────── */
+.portfolio-reveal__scroll-hint {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lavender);
+  opacity: calc(1 - var(--reveal-text-opacity, 0));
+  transition: opacity 0.15s;
+  pointer-events: none;
+}
+
+.portfolio-reveal__scroll-hint-line {
+  width: 1px;
+  height: 32px;
+  background: linear-gradient(to bottom, var(--lavender), transparent);
+  animation: scrollPulse 2.5s ease-in-out infinite;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .portfolio-reveal {
+    min-height: 500px;
+  }
+
+  .portfolio-reveal__stage {
+    padding: 0 16px;
+  }
+
+  .portfolio-reveal__device {
+    max-width: 92vw;
+  }
+
+  .portfolio-reveal__content {
+    margin-top: 32px;
+    gap: 10px;
+  }
+
+  .portfolio-reveal__project-title {
+    font-size: clamp(1.4rem, 5vw, 2rem);
+  }
+
+  .portfolio-reveal__cta {
+    padding: 10px 24px;
+    font-size: 0.82rem;
+  }
+
+  .portfolio-reveal__spotlight {
+    width: 350px;
+    height: 350px;
+  }
+}
+
+@media (max-width: 480px) {
+  .portfolio-reveal__screen-wrap {
+    padding: 6px 6px 0;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .portfolio-reveal__browser-bar {
+    padding: 5px 8px;
+  }
+
+  .portfolio-reveal__browser-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .portfolio-reveal__browser-url {
+    font-size: 0.55rem;
+    padding: 3px 8px;
+  }
+}
+
+/* ── Prefers Reduced Motion ──────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-reveal {
+    height: auto;
+    min-height: auto;
+    padding: 80px 0;
+  }
+
+  .portfolio-reveal__device {
+    transform: rotateX(5deg) rotateY(-8deg) scale(1) !important;
+  }
+
+  .portfolio-reveal__screen-wrap,
+  .portfolio-reveal__base,
+  .portfolio-reveal__hinge {
+    opacity: 1 !important;
+  }
+
+  .portfolio-reveal__content {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .portfolio-reveal__backdrop {
+    opacity: 1 !important;
+  }
+
+  .portfolio-reveal__scroll-hint {
+    display: none;
+  }
+}

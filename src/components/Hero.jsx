@@ -1,100 +1,13 @@
-import React, { useRef, useEffect } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Float } from '@react-three/drei'
-import * as THREE from 'three'
+import React, { useRef, useEffect, useState, Suspense } from 'react'
+import { Canvas } from '@react-three/fiber'
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
 import { useMagnetic } from '../hooks/useMagnetic'
 import { useContent } from '../context/ContentContext'
+import ProductStageScene from './ProductStage3D'
 import './Hero.css'
 
 gsap.registerPlugin(ScrollTrigger)
-
-/* ── Glass Panel ─────────────────────────────────── */
-function GlassPanel({ position, rotation, color, opacity = 0.5, index, separationRef }) {
-  const meshRef = useRef()
-
-  useFrame((state) => {
-    if (!meshRef.current) return
-    const t = state.clock.elapsedTime
-    const sep = separationRef.current || 0
-
-    meshRef.current.position.z = position[2] + sep * (index - 1.5) * 1.2
-    meshRef.current.position.y = position[1] + Math.sin(t * 0.5 + index * 0.8) * 0.04
-
-    meshRef.current.rotation.x = rotation[0] + Math.sin(t * 0.3 + index) * 0.02
-    meshRef.current.rotation.y = rotation[1] + Math.cos(t * 0.25 + index) * 0.015
-
-    meshRef.current.material.opacity = opacity * (1 - sep * 0.6)
-  })
-
-  return (
-    <mesh ref={meshRef} position={position} rotation={rotation}>
-      <planeGeometry args={[2.4, 1.5]} />
-      <meshPhysicalMaterial
-        color={color}
-        transparent
-        opacity={opacity}
-        roughness={0.12}
-        metalness={0.1}
-        clearcoat={0.8}
-        clearcoatRoughness={0.1}
-        reflectivity={0.9}
-        side={THREE.DoubleSide}
-        depthWrite={false}
-      />
-    </mesh>
-  )
-}
-
-/* ── Glass Stack ─────────────────────────────────── */
-function GlassStack({ separationRef }) {
-  const groupRef = useRef()
-
-  useFrame((state) => {
-    if (!groupRef.current) return
-    const t = state.clock.elapsedTime
-    groupRef.current.rotation.y = Math.sin(t * 0.2) * 0.08
-    groupRef.current.rotation.x = Math.sin(t * 0.15) * 0.03
-  })
-
-  const panels = [
-    { pos: [0, 0, -0.8],  rot: [0.04, 0.06, 0],   color: '#1e15a0', opacity: 0.55 },
-    { pos: [0, 0, -0.3],  rot: [-0.02, -0.03, 0],  color: '#3525c8', opacity: 0.6 },
-    { pos: [0, 0, 0.2],   rot: [0.03, 0.04, 0],    color: '#6c47e0', opacity: 0.5 },
-    { pos: [0, 0, 0.7],   rot: [-0.03, -0.05, 0],  color: '#b888cc', opacity: 0.4 },
-  ]
-
-  return (
-    <group ref={groupRef}>
-      {panels.map((p, i) => (
-        <GlassPanel
-          key={i}
-          position={p.pos}
-          rotation={p.rot}
-          color={p.color}
-          opacity={p.opacity}
-          index={i}
-          separationRef={separationRef}
-        />
-      ))}
-
-      <pointLight color="#261AB1" intensity={3} distance={6} position={[2, 1.5, 2]} />
-      <pointLight color="#E1ACF4" intensity={2} distance={5} position={[-2, -1, 1.5]} />
-    </group>
-  )
-}
-
-/* ── Camera Rig ──────────────────────────────────── */
-function CameraRig({ mousePos }) {
-  const { camera } = useThree()
-  useFrame(() => {
-    camera.position.x += (mousePos.current.x * 0.5 - camera.position.x) * 0.04
-    camera.position.y += (mousePos.current.y * 0.3 - camera.position.y) * 0.04
-    camera.lookAt(0, 0, 0)
-  })
-  return null
-}
 
 /* ── Hero Section ────────────────────────────────── */
 export default function Hero() {
@@ -105,8 +18,10 @@ export default function Hero() {
   const btnRef       = useRef()
   const badgesRef    = useRef()
   const mousePos     = useRef({ x: 0, y: 0 })
-  const separationRef = useRef(0)
   const magnetic     = useMagnetic(70, 0.3)
+  const [isVisible, setIsVisible] = useState(true)
+  const scrollProgress = useRef(0)
+  const heroContentRef = useRef()
 
   const xTextTo = useRef(null)
   const yTextTo = useRef(null)
@@ -116,6 +31,13 @@ export default function Hero() {
   const yBtnTo  = useRef(null)
 
   useEffect(() => {
+    /* IntersectionObserver – pause GPU when off-screen */
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.05 }
+    )
+    if (sectionRef.current) observer.observe(sectionRef.current)
+
     if (textRef.current) {
       xTextTo.current = gsap.quickTo(textRef.current, 'x', { duration: 0.6, ease: 'power2.out' })
       yTextTo.current = gsap.quickTo(textRef.current, 'y', { duration: 0.6, ease: 'power2.out' })
@@ -146,15 +68,32 @@ export default function Hero() {
       { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', delay: 1.3 }
     )
 
-    ScrollTrigger.create({
+    // Pin & scrub ScrollTrigger for 3D Hero Scrollytelling
+    const isMobile = window.innerWidth <= 768
+    const st = ScrollTrigger.create({
       trigger: sectionRef.current,
-      start: 'bottom 60%',
-      end: 'bottom -20%',
-      scrub: 1.5,
+      start: 'top top',
+      end: isMobile ? '+=80%' : '+=130%',
+      pin: true,
+      scrub: 1,
       onUpdate: (self) => {
-        separationRef.current = self.progress
+        const p = self.progress
+        scrollProgress.current = p
+
+        // Fade hero text content as 3D architecture stack unfolds
+        if (heroContentRef.current) {
+          const fadeP = Math.min(p / 0.45, 1)
+          heroContentRef.current.style.opacity = 1 - fadeP
+          heroContentRef.current.style.transform = `translateY(${-fadeP * 50}px) scale(${1 - fadeP * 0.08})`
+          heroContentRef.current.style.pointerEvents = p > 0.4 ? 'none' : 'auto'
+        }
       }
     })
+
+    return () => {
+      st.kill()
+      observer.disconnect()
+    }
   }, [])
 
   const handlePointerMove = (clientX, clientY) => {
@@ -189,22 +128,20 @@ export default function Hero() {
     <section id="hero" className="hero" ref={sectionRef} onMouseMove={onMouseMove} onTouchMove={onTouchMove}>
       <div className="hero__canvas">
         <Canvas
-          camera={{ position: [0, 0, 4.5], fov: 50 }}
+          camera={{ position: [0, 1, 5.5], fov: 45 }}
           gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
           dpr={[1, 1.5]}
+          frameloop={isVisible ? 'always' : 'never'}
         >
-          <ambientLight intensity={0.3} />
-          <directionalLight position={[5, 5, 5]} intensity={0.8} color="#ffffff" />
-          <CameraRig mousePos={mousePos} />
-          <Float floatIntensity={0.2} rotationIntensity={0.1} speed={1.2}>
-            <GlassStack separationRef={separationRef} />
-          </Float>
+          <Suspense fallback={null}>
+            <ProductStageScene mousePos={mousePos} scrollProgress={scrollProgress} />
+          </Suspense>
         </Canvas>
       </div>
 
       <div className="hero__overlay" />
 
-      <div className="hero__content">
+      <div className="hero__content" ref={heroContentRef}>
         <div className="hero__status">
           <span className="hero__status-dot" />
           {siteCopy.heroStatus}

@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { useContent } from '../context/ContentContext'
+import PortfolioReveal from './PortfolioReveal'
 import './Portfolio.css'
 
 function PortfolioCard({ p, isActive }) {
@@ -149,6 +150,7 @@ export default function Portfolio() {
 
   return (
     <section id="portfolio" className="section portfolio" ref={sectionRef}>
+      <PortfolioReveal />
       <div className="portfolio__spotlight" />
 
       <div className="container">
