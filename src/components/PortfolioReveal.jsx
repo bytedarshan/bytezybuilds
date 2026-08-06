@@ -112,9 +112,9 @@ export default function PortfolioReveal() {
     const st = ScrollTrigger.create({
       trigger: container,
       start: 'top top',
-      end: isMobile ? '+=100%' : '+=150%',
+      end: isMobile ? '+=160%' : '+=300%',
       pin: true,
-      scrub: 1,
+      scrub: 2,
       anticipatePin: 1,
       onUpdate: (self) => {
         const p = self.progress

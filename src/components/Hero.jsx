@@ -73,19 +73,19 @@ export default function Hero() {
     const st = ScrollTrigger.create({
       trigger: sectionRef.current,
       start: 'top top',
-      end: isMobile ? '+=80%' : '+=130%',
+      end: isMobile ? '+=150%' : '+=260%',
       pin: true,
-      scrub: 1,
+      scrub: 2,
       onUpdate: (self) => {
         const p = self.progress
         scrollProgress.current = p
 
-        // Fade hero text content as 3D architecture stack unfolds
+        // Fade hero text content smoothly as 3D architecture stack unfolds
         if (heroContentRef.current) {
-          const fadeP = Math.min(p / 0.45, 1)
+          const fadeP = Math.min(p / 0.55, 1)
           heroContentRef.current.style.opacity = 1 - fadeP
           heroContentRef.current.style.transform = `translateY(${-fadeP * 50}px) scale(${1 - fadeP * 0.08})`
-          heroContentRef.current.style.pointerEvents = p > 0.4 ? 'none' : 'auto'
+          heroContentRef.current.style.pointerEvents = p > 0.5 ? 'none' : 'auto'
         }
       }
     })

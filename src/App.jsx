@@ -23,10 +23,10 @@ function MainSite() {
   useEffect(() => {
     // Initialize Lenis Smooth Scroll engine
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 1.8,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      wheelMultiplier: 1.0,
+      wheelMultiplier: 0.85,
     })
 
     lenis.on('scroll', ScrollTrigger.update)

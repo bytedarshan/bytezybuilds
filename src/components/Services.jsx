@@ -21,11 +21,10 @@ export default function Services() {
   const activeNumRef = useRef()
 
   useEffect(() => {
-    const isMobile = window.innerWidth <= 768
-    if (isMobile) return
-
     const track = reelTrackRef.current
     if (!track) return
+
+    const isMobile = window.innerWidth <= 768
 
     // Set initial GSAP states
     gsap.set(card0Ref.current, { opacity: 1, scale: 1 })
@@ -36,35 +35,44 @@ export default function Services() {
     gsap.set(stage1Ref.current, { opacity: 0, y: 80, scale: 0.88, rotateX: 12 })
     gsap.set(stage2Ref.current, { opacity: 0, y: 80, scale: 0.88, rotateX: 12 })
 
-    // Create single scrubbed GSAP timeline
+    // Create single scrubbed GSAP timeline with strong resistance and resting hold buffers
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: sectionRef.current,
         start: 'top top',
-        end: '+=380%',
+        end: isMobile ? '+=400%' : '+=650%',
         pin: true,
-        scrub: 1,
+        scrub: isMobile ? 1.5 : 2.2,
         anticipatePin: 1,
       }
     })
 
-    // ── STEP 0 → STEP 1 (Scroll Progress 0.0 → 0.5) ──
-    tl.to(track, { yPercent: -33.33, duration: 1, ease: 'power2.inOut' }, 0)
-      .to(card0Ref.current, { opacity: 0.2, scale: 0.9, duration: 1 }, 0)
-      .to(card1Ref.current, { opacity: 1, scale: 1, duration: 1 }, 0)
-      .to(stage0Ref.current, { opacity: 0, y: -70, scale: 0.85, rotateX: -6, duration: 1 }, 0)
-      .to(stage1Ref.current, { opacity: 1, y: 0, scale: 1, rotateX: 6, duration: 1 }, 0)
-      .to(progressFillRef.current, { width: '66.6%', duration: 1 }, 0)
-      .to(svgLineRef.current, { strokeDashoffset: 160, duration: 1 }, 0)
+    // ── STAGE 0 (Resting Hold: 0 → 0.6) ──
+    tl.to({}, { duration: 0.6 })
 
-    // ── STEP 1 → STEP 2 (Scroll Progress 0.5 → 1.0) ──
-    tl.to(track, { yPercent: -66.66, duration: 1, ease: 'power2.inOut' }, 1)
-      .to(card1Ref.current, { opacity: 0.2, scale: 0.9, duration: 1 }, 1)
-      .to(card2Ref.current, { opacity: 1, scale: 1, duration: 1 }, 1)
-      .to(stage1Ref.current, { opacity: 0, y: -70, scale: 0.85, rotateX: -6, duration: 1 }, 1)
-      .to(stage2Ref.current, { opacity: 1, y: 0, scale: 1, rotateX: 6, duration: 1 }, 1)
-      .to(progressFillRef.current, { width: '100%', duration: 1 }, 1)
-      .to(svgLineRef.current, { strokeDashoffset: 0, duration: 1 }, 1)
+    // ── STAGE 0 → STAGE 1 TRANSITION (0.6 → 1.6) ──
+      .to(track, { yPercent: -33.33, duration: 1, ease: 'power2.inOut' }, 0.6)
+      .to(card0Ref.current, { opacity: 0.2, scale: 0.9, duration: 1 }, 0.6)
+      .to(card1Ref.current, { opacity: 1, scale: 1, duration: 1 }, 0.6)
+      .to(stage0Ref.current, { opacity: 0, y: -70, scale: 0.85, rotateX: -6, duration: 1 }, 0.6)
+      .to(stage1Ref.current, { opacity: 1, y: 0, scale: 1, rotateX: 6, duration: 1 }, 0.6)
+      .to(progressFillRef.current, { width: '66.6%', duration: 1 }, 0.6)
+      .to(svgLineRef.current, { strokeDashoffset: 160, duration: 1 }, 0.6)
+
+    // ── STAGE 1 (Resting Hold: 1.6 → 2.2) ──
+      .to({}, { duration: 0.6 })
+
+    // ── STAGE 1 → STAGE 2 TRANSITION (2.2 → 3.2) ──
+      .to(track, { yPercent: -66.66, duration: 1, ease: 'power2.inOut' }, 2.2)
+      .to(card1Ref.current, { opacity: 0.2, scale: 0.9, duration: 1 }, 2.2)
+      .to(card2Ref.current, { opacity: 1, scale: 1, duration: 1 }, 2.2)
+      .to(stage1Ref.current, { opacity: 0, y: -70, scale: 0.85, rotateX: -6, duration: 1 }, 2.2)
+      .to(stage2Ref.current, { opacity: 1, y: 0, scale: 1, rotateX: 6, duration: 1 }, 2.2)
+      .to(progressFillRef.current, { width: '100%', duration: 1 }, 2.2)
+      .to(svgLineRef.current, { strokeDashoffset: 0, duration: 1 }, 2.2)
+
+    // ── STAGE 2 (Resting Hold: 3.2 → 4.0 before unpinning) ──
+      .to({}, { duration: 0.8 })
 
     return () => {
       ScrollTrigger.getAll().forEach(t => t.kill())

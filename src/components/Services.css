@@ -582,69 +582,87 @@
 
 @media (max-width: 768px) {
   .services {
-    padding: 60px 0;
-    min-height: auto;
+    padding: 70px 0;
+    min-height: 100vh;
   }
 
   .services__layout {
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 20px;
   }
 
   .svc-reel-viewport {
-    height: auto;
+    height: 320px;
     border-radius: 20px;
-    background: transparent;
-    border: none;
-    box-shadow: none;
+    background: #0f0c24;
+    border: 1px solid rgba(225, 172, 244, 0.18);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
   }
 
   .svc-reel-track {
-    height: auto;
-    gap: 16px;
-    transform: none !important;
+    display: flex;
+    flex-direction: column;
+    height: 300%;
   }
 
   .svc-reel-card {
-    height: auto;
-    opacity: 1 !important;
-    transform: none !important;
-    padding: 24px 20px;
-    background: #0f0c24;
-    border: 1px solid rgba(225, 172, 244, 0.18);
-    border-radius: 20px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    height: 33.333%;
+    padding: 20px 16px;
+    gap: 8px;
+    justify-content: center;
   }
 
   .svc-reel-card__title {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
   }
 
   .svc-reel-card__sub {
-    font-size: 0.88rem;
+    font-size: 0.82rem;
   }
 
   .svc-reel-card__body p {
-    font-size: 0.85rem;
-    line-height: 1.6;
+    font-size: 0.78rem;
+    line-height: 1.5;
   }
 
   .svc-reel-progress {
-    display: none;
+    padding: 8px 16px;
   }
 
   .services__stage-viewport {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 260px;
+    width: 100%;
+    margin-top: 10px;
+    transform: scale(0.72);
+    transform-origin: top center;
+  }
+
+  /* Compact inline layout for floating badges on mobile */
+  .svc-ui-tree__card--floating,
+  .svc-ui-tree__card--metric,
+  .svc-api-pipeline__floating,
+  .svc-cloud-chamber__guarantee {
     display: none;
   }
 }
 
 @media (max-width: 480px) {
   .services {
-    padding: 50px 0;
+    padding: 60px 0;
   }
 
-  .svc-reel-card {
-    padding: 20px 16px;
+  .svc-reel-viewport {
+    height: 310px;
+  }
+
+  .services__stage-viewport {
+    height: 240px;
+    transform: scale(0.68);
   }
 }
